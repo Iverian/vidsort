@@ -1,0 +1,8 @@
+.claude
+.vscode
+target
+.editorconfig
+.env
+.gitignore
+CLAUDE.md
+rustfmt.toml
