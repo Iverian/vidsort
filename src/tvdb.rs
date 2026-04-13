@@ -14,7 +14,7 @@ use crate::report::AnyResult;
 
 const BASE_URL: &str = "https://api4.thetvdb.com";
 /// Refresh the token after 25 days; TVDB tokens expire at 30.
-const TOKEN_TTL: Duration = Duration::from_hours(25 * 24);
+const TOKEN_TTL: Duration = Duration::from_secs(25 * 24 * 60 * 60);
 
 // ── public output types ──────────────────────────────────────────────────────
 

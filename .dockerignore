@@ -1,8 +1,10 @@
 .claude
-.vscode
-target
 .editorconfig
 .env
 .gitignore
+.vscode
 CLAUDE.md
+Dockerfile
+README.md
 rustfmt.toml
+target
