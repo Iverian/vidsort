@@ -114,6 +114,7 @@ impl Launcher {
                         }
                         Some(Err(e)) => {
                             tracing::error!(error = ?e, span_trace = %e.span_trace(), "task failed");
+                            ct.cancel();
                             Self::complete(rx).await;
                             break;
                         }

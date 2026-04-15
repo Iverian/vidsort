@@ -69,18 +69,14 @@ async fn dispatch_line(line: String, tx: &mpsc::Sender<TorrentId>) -> AnyResult<
 
 fn ensure_fifo(path: &Utf8Path) -> AnyResult<()> {
     if !path.exists() {
-        nix::unistd::mkfifo(path.as_std_path(), Mode::S_IRUSR | Mode::S_IWUSR)?;
+        nix::unistd::mkfifo(path.as_std_path(), Mode::S_IRWXU)?;
         tracing::info!(path = %path, "created FIFO");
     }
     Ok(())
 }
 
 fn open_read(path: &Utf8Path) -> AnyResult<OwnedFd> {
-    Ok(open(
-        path.as_std_path(),
-        OFlag::O_RDONLY | OFlag::O_NONBLOCK,
-        Mode::empty(),
-    )?)
+    Ok(open(path.as_std_path(), OFlag::O_RDONLY, Mode::empty())?)
 }
 
 fn open_write(path: &Utf8Path) -> AnyResult<OwnedFd> {

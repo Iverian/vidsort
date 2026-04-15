@@ -21,6 +21,15 @@ RUN cargo install --root dist --path .
 
 FROM debian:unstable-slim AS runtime
 
+RUN \
+  export DEBIAN_FRONTEND=noninteractive \
+  && apt-get update \
+  && apt-get install --yes --no-install-recommends ca-certificates \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/* \
+  && update-ca-certificates
+
+USER 1000
 WORKDIR /app
 COPY --from=builder /app/dist/bin/vidsort /usr/local/bin/
 ENTRYPOINT ["/usr/local/bin/vidsort"]
