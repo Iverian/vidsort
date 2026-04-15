@@ -41,8 +41,8 @@ impl Client {
         };
         Self {
             inner,
-            retry_attempts: config.retry_attempts.max(1),
-            retry_delay: config.retry_delay.into(),
+            retry_attempts: config.transmission_retry_attempts.max(1),
+            retry_delay: config.transmission_retry_delay.into(),
         }
     }
 

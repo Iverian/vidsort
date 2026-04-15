@@ -109,8 +109,8 @@ impl Client {
             token: RwLock::new(None),
             show_cache: RwLock::new(show_cache),
             movie_cache: RwLock::new(movie_cache),
-            retry_attempts: config.retry_attempts.max(1),
-            retry_delay: config.retry_delay.into(),
+            retry_attempts: config.tvdb_retry_attempts.max(1),
+            retry_delay: config.tvdb_retry_delay.into(),
             show_tree,
             movie_tree,
         })
@@ -538,8 +538,8 @@ mod tests {
             std::env::var("VIDSORT_TVDB_API_KEY").expect("VIDSORT_TVDB_API_KEY must be set");
         Client::new(&TvdbConfig {
             tvdb_api_key: api_key,
-            retry_attempts: 3,
-            retry_delay: std::time::Duration::from_secs(1).into(),
+            tvdb_retry_attempts: 3,
+            tvdb_retry_delay: std::time::Duration::from_secs(1).into(),
             cache_path: None,
         })
         .expect("failed to create TVDB client")

@@ -58,12 +58,12 @@ pub struct TransmissionConfig {
     pub password: Option<String>,
 
     /// Maximum number of attempts for each Transmission RPC request (1 = no retry).
-    #[arg(long, env = "VIDSORT_TRANSMISSION_RETRY_ATTEMPTS", default_value_t = 3)]
-    pub retry_attempts: u32,
+    #[arg(long, env = "VIDSORT_TRANSMISSION_RETRY_ATTEMPTS", default_value = "3")]
+    pub transmission_retry_attempts: u32,
 
     /// Delay between retry attempts, e.g. "1s", "500ms".
     #[arg(long, env = "VIDSORT_TRANSMISSION_RETRY_DELAY", default_value = "15s")]
-    pub retry_delay: humantime::Duration,
+    pub transmission_retry_delay: humantime::Duration,
 }
 
 #[derive(Args, Debug)]
@@ -72,12 +72,12 @@ pub struct TvdbConfig {
     pub tvdb_api_key: String,
 
     /// Maximum number of attempts for each TVDB HTTP request (1 = no retry).
-    #[arg(long, env = "VIDSORT_TVDB_RETRY_ATTEMPTS", default_value_t = 3)]
-    pub retry_attempts: u32,
+    #[arg(long, env = "VIDSORT_TVDB_RETRY_ATTEMPTS", default_value = "3")]
+    pub tvdb_retry_attempts: u32,
 
     /// Delay between retry attempts, e.g. "1s", "500ms".
     #[arg(long, env = "VIDSORT_TVDB_RETRY_DELAY", default_value = "1m")]
-    pub retry_delay: humantime::Duration,
+    pub tvdb_retry_delay: humantime::Duration,
 
     /// Path to the persistent TVDB cache database directory.
     /// When unset the cache is in-memory only and is lost on restart.
