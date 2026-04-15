@@ -55,7 +55,6 @@ fn main() -> ExitCode {
     }
 }
 
-
 #[allow(clippy::cast_precision_loss)] // display-only; file sizes never exceed f64 precision meaningfully
 fn fmt_size(bytes: u64) -> String {
     human_bytes::human_bytes(bytes as f64)

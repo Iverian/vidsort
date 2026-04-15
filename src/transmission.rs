@@ -1,8 +1,13 @@
+use std::time::Duration;
+
 use camino::Utf8PathBuf;
 use transmission_rpc::TransClient;
 use transmission_rpc::types::BasicAuth;
 use transmission_rpc::types::Id;
+use transmission_rpc::types::RpcResponse;
+use transmission_rpc::types::Torrent;
 use transmission_rpc::types::TorrentGetField;
+use transmission_rpc::types::Torrents;
 
 use crate::config::TransmissionConfig;
 use crate::report::AnyResult;
@@ -12,6 +17,8 @@ use crate::types::TorrentInfo;
 
 pub struct Client {
     inner: TransClient,
+    retry_attempts: u32,
+    retry_delay: Duration,
 }
 
 impl std::fmt::Debug for Client {
@@ -32,7 +39,11 @@ impl Client {
             ),
             _ => TransClient::new(config.url.clone()),
         };
-        Self { inner }
+        Self {
+            inner,
+            retry_attempts: config.retry_attempts.max(1),
+            retry_delay: config.retry_delay.into(),
+        }
     }
 
     /// Fetch all torrents that have finished downloading (`percentDone == 1.0`).
@@ -46,11 +57,7 @@ impl Client {
             TorrentGetField::PercentDone,
         ];
 
-        let resp = self
-            .inner
-            .torrent_get(Some(fields), None)
-            .await
-            .map_err(|e| eyre::eyre!("transmission RPC request failed: {e}"))?;
+        let resp = self.torrent_get_with_retry(Some(fields), None).await?;
 
         let mut result = Vec::new();
         for torrent in resp.arguments.torrents {
@@ -103,10 +110,8 @@ impl Client {
         ];
 
         let mut resp = self
-            .inner
-            .torrent_get(Some(fields), Some(vec![Id::Id(id.0)]))
-            .await
-            .map_err(|e| eyre::eyre!("transmission RPC request failed: {e}"))?;
+            .torrent_get_with_retry(Some(fields), Some(vec![Id::Id(id.0)]))
+            .await?;
 
         let torrent = resp
             .arguments
@@ -139,5 +144,36 @@ impl Client {
             download_dir: Utf8PathBuf::from(download_dir),
             files,
         })
+    }
+
+    async fn torrent_get_with_retry(
+        &mut self,
+        fields: Option<Vec<TorrentGetField>>,
+        ids: Option<Vec<Id>>,
+    ) -> AnyResult<RpcResponse<Torrents<Torrent>>> {
+        let attempts = self.retry_attempts;
+        let delay = self.retry_delay;
+        for attempt in 1..=attempts {
+            let result = self
+                .inner
+                .torrent_get(fields.clone(), ids.clone())
+                .await
+                .map_err(|e| eyre::eyre!("transmission RPC request failed: {e}"));
+            match result {
+                Ok(val) => return Ok(val),
+                Err(e) if attempt < attempts => {
+                    tracing::warn!(
+                        attempt,
+                        attempts,
+                        delay_ms = delay.as_millis(),
+                        error = ?e,
+                        "transmission RPC request failed; retrying"
+                    );
+                    tokio::time::sleep(delay).await;
+                }
+                Err(e) => return Err(e),
+            }
+        }
+        unreachable!()
     }
 }

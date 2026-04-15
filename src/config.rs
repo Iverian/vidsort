@@ -37,7 +37,7 @@ pub struct Config {
     #[command(flatten)]
     pub tracing: TracingConfig,
 
-    /// Print planned hard-links to stdout instead of creating them.
+    /// Log planned hard-links instead of creating them.
     #[arg(long, action)]
     pub dry_run: bool,
 
@@ -56,6 +56,14 @@ pub struct TransmissionConfig {
 
     #[arg(long, env = "VIDSORT_TRANSMISSION_PASSWORD")]
     pub password: Option<String>,
+
+    /// Maximum number of attempts for each Transmission RPC request (1 = no retry).
+    #[arg(long, env = "VIDSORT_TRANSMISSION_RETRY_ATTEMPTS", default_value_t = 3)]
+    pub retry_attempts: u32,
+
+    /// Delay between retry attempts, e.g. "1s", "500ms".
+    #[arg(long, env = "VIDSORT_TRANSMISSION_RETRY_DELAY", default_value = "15s")]
+    pub retry_delay: humantime::Duration,
 }
 
 #[derive(Args, Debug)]
